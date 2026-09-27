@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ZENKAI CALCULATOR</title>
+<style>
+  :root{
+    box-sizing:border-box;
+    --bg:#0a0a0b;
+    --panel:#1c1d1f;
+    --panel-2:#26282b;
+    --border:#3a3c40;
+    --border-strong:#4d4f54;
+    --text:#f2f2f0;
+    --text-dim:#9a9d a2;
+    --text-dim2:#9a9da2;
+    --accent:#ff4d2e;
+    --accent-2:#ffb02e;
+    --danger:#ff5555;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+  body{
+    height:100%;
+    margin:0;
+    background:
+      radial-gradient(ellipse at top, #1a1a1c 0%, var(--bg) 60%);
+    color:var(--text);
+    font-family:'Segoe UI', Roboto, Arial, sans-serif;
+    display:flex;
+    justify-content:center;
+    -webkit-tap-highlight-color:transparent;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#0a0a0b; --panel:#1c1d1f; --panel-2:#26282b;
+      --border:#3a3c40; --text:#f2f2f0;
+    }
+  }
+
+  .app{
+    width:100%;
+    max-width:440px;
+    min-height:100%;
+    padding:18px 16px 28px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding-bottom:8px;
+    border-bottom:2px solid var(--border);
+  }
+  .title-block{ display:flex; flex-direction:column; }
+  .title-block h1{
+    margin:0;
+    font-size:20px;
+    letter-spacing:2px;
+    font-weight:800;
+    color:var(--text);
+    text-shadow:0 0 8px rgba(255,77,46,0.35);
+  }
+  .title-block h1 span{ color:var(--accent); }
+  .subtitle{
+    margin-top:2px;
+    font-size:10px;
+    letter-spacing:1px;
+    color:var(--text-dim2);
+    text-transform:uppercase;
+  }
+
+  .lang-toggle{
+    display:flex;
+    border:1px solid var(--border-strong);
+    background:var(--panel);
+  }
+  .lang-toggle button{
+    border:none;
+    background:transparent;
+    color:var(--text-dim2);
+    padding:7px 10px;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1px;
+    cursor:pointer;
+  }
+  .lang-toggle button.active{
+    background:var(--accent);
+    color:#1a0700;
+  }
+
+  .panel{
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--border-strong);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 10px rgba(0,0,0,0.45);
+    padding:14px;
+  }
+
+  label.field-label{
+    display:block;
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--text-dim2);
+    margin-bottom:6px;
+  }
+
+  input[type="text"]{
+    width:100%;
+    background:#0f0f10;
+    border:1px solid var(--border-strong);
+    color:var(--text);
+    font-size:20px;
+    font-weight:700;
+    padding:12px 10px;
+    outline:none;
+    letter-spacing:0.5px;
+  }
+  input[type="text"]:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 2px rgba(255,77,46,0.25);
+  }
+
+  .error-msg{
+    margin-top:8px;
+    color:var(--danger);
+    font-size:12px;
+    font-weight:600;
+    min-height:14px;
+  }
+
+  .calc-btn{
+    width:100%;
+    padding:14px;
+    margin-top:12px;
+    background:linear-gradient(180deg, var(--accent), #b5330f);
+    border:1px solid #7a2409;
+    color:#1a0700;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    cursor:pointer;
+    box-shadow:0 3px 0 #7a2409, 0 6px 10px rgba(0,0,0,0.4);
+  }
+  .calc-btn:active{
+    transform:translateY(2px);
+    box-shadow:0 1px 0 #7a2409, 0 3px 6px rgba(0,0,0,0.4);
+  }
+
+  .results{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .stat-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-left:3px solid var(--border-strong);
+  }
+  .stat-row.highlight{
+    border-left:3px solid var(--accent);
+  }
+  .stat-label{
+    font-size:12px;
+    letter-spacing:0.5px;
+    color:var(--text-dim2);
+  }
+  .stat-value{
+    font-size:17px;
+    font-weight:800;
+    color:var(--text);
+    font-variant-numeric:tabular-nums;
+  }
+  .stat-value.accent{ color:var(--accent); }
+  .stat-value.gold{ color:var(--accent-2); }
+
+  .placeholder{
+    text-align:center;
+    color:var(--text-dim2);
+    font-size:12px;
+    padding:18px 4px;
+    letter-spacing:0.5px;
+  }
+
+  footer{
+    margin-top:auto;
+    text-align:center;
+    font-size:10px;
+    color:#5a5c60;
+    letter-spacing:0.5px;
+    padding-top:10px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="title-block">
+      <h1>ZEN<span>KAI</span> CALC</h1>
+      <div class="subtitle" id="subtitleText">Fan-made Base Power tool</div>
+    </div>
+    <div class="lang-toggle">
+      <button id="btnEN" class="active">EN</button>
+      <button id="btnTH">TH</button>
+    </div>
+  </header>
+
+  <div class="panel">
+    <label class="field-label" id="labelInput">Current Base Power</label>
+    <input type="text" id="basePowerInput" inputmode="decimal" placeholder="e.g. 1.22" autocomplete="off">
+    <div class="error-msg" id="errorMsg"></div>
+    <button class="calc-btn" id="calcBtn">Calculate</button>
+  </div>
+
+  <div class="panel results" id="resultsPanel">
+    <div class="placeholder" id="placeholderText">Enter your Base Power to see results</div>
+  </div>
+
+  <footer>Unofficial fan tool &middot; not affiliated with Dragonfist Limitless</footer>
+</div>
+
+<script>
+(function(){
+  var lang = 'en';
+
+  var LABELS = {
+    en: {
+      subtitle: 'Fan-made Base Power tool',
+      input: 'Current Base Power',
+      btn: 'Calculate',
+      placeholder: 'Enter your Base Power to see results',
+      current: 'Current Base Power',
+      required: 'Required Base Power',
+      boss: 'Minimum Boss Base',
+      next: 'Next Zenkai Target',
+      errEmpty: 'Please enter a Base Power value.',
+      errInvalid: 'Please enter a valid number.',
+      errZero: 'Base Power must be greater than zero.'
+    },
+    th: {
+      subtitle: 'เครื่องคำนวณ Base Power (แฟนเมด)',
+      input: 'Base Power ปัจจุบัน',
+      btn: 'คำนวณ',
+      placeholder: 'กรอก Base Power เพื่อดูผลลัพธ์',
+      current: 'Base Power ปัจจุบัน',
+      required: 'Base Power ที่ต้องมี',
+      boss: 'Boss Base ขั้นต่ำ',
+      next: 'เป้าหมาย Zenkai ครั้งถัดไป',
+      errEmpty: 'กรุณากรอกค่า Base Power',
+      errInvalid: 'กรุณากรอกตัวเลขที่ถูกต้อง',
+      errZero: 'Base Power ต้องมากกว่าศูนย์'
+    }
+  };
+
+  var input = document.getElementById('basePowerInput');
+  var errorMsg = document.getElementById('errorMsg');
+  var resultsPanel = document.getElementById('resultsPanel');
+  var calcBtn = document.getElementById('calcBtn');
+  var btnEN = document.getElementById('btnEN');
+  var btnTH = document.getElementById('btnTH');
+
+  function fmt(n){
+    // trim to reasonable precision, no trailing zeros beyond 3-4 decimals
+    var r = Math.round(n * 10000) / 10000;
+    return r.toString();
+  }
+
+  function applyLanguage(){
+    var L = LABELS[lang];
+    document.getElementById('subtitleText').textContent = L.subtitle;
+    document.getElementById('labelInput').textContent = L.input;
+    calcBtn.textContent = L.btn;
+    if (!lastResult){
+      document.getElementById('placeholderText') && (document.getElementById('placeholderText').textContent = L.placeholder);
+    } else {
+      renderResults(lastResult);
+    }
+    if (currentError){
+      errorMsg.textContent = currentError();
+    }
+  }
+
+  var lastResult = null;
+  var currentError = null;
+
+  function showError(key){
+    var L = LABELS[lang];
+    currentError = function(){ return L[key]; };
+    errorMsg.textContent = L[key];
+    lastResult = null;
+    resultsPanel.innerHTML = '<div class="placeholder" id="placeholderText">' + L.placeholder + '</div>';
+  }
+
+  function clearError(){
+    currentError = null;
+    errorMsg.textContent = '';
+  }
+
+  function renderResults(r){
+    var L = LABELS[lang];
+    resultsPanel.innerHTML =
+      '<div class="stat-row">' +
+        '<span class="stat-label">' + L.current + '</span>' +
+        '<span class="stat-value">' + fmt(r.base) + '</span>' +
+      '</div>' +
+      '<div class="stat-row highlight">' +
+        '<span class="stat-label">' + L.required + '</span>' +
+        '<span class="stat-value accent">' + fmt(r.required) + '</span>' +
+      '</div>' +
+      '<div class="stat-row">' +
+        '<span class="stat-label">' + L.boss + '</span>' +
+        '<span class="stat-value gold">' + fmt(r.boss) + '</span>' +
+      '</div>' +
+      '<div class="stat-row">' +
+        '<span class="stat-label">' + L.next + '</span>' +
+        '<span class="stat-value">' + fmt(r.next) + '</span>' +
+      '</div>';
+  }
+
+  function calculate(){
+    var raw = input.value.trim();
+    if (raw === ''){
+      showError('errEmpty');
+      return;
+    }
+    var val = Number(raw);
+    if (isNaN(val) || !isFinite(val)){
+      showError('errInvalid');
+      return;
+    }
+    if (val <= 0){
+      showError('errZero');
+      return;
+    }
+    clearError();
+    var required = val * 1.5;
+    var boss = val * 1.1;
+    var next = required * 1.5;
+    lastResult = { base: val, required: required, boss: boss, next: next };
+    renderResults(lastResult);
+  }
+
+  calcBtn.addEventListener('click', calculate);
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') calculate();
+  });
+
+  btnEN.addEventListener('click', function(){
+    lang = 'en';
+    btnEN.classList.add('active');
+    btnTH.classList.remove('active');
+    applyLanguage();
+  });
+  btnTH.addEventListener('click', function(){
+    lang = 'th';
+    btnTH.classList.add('active');
+    btnEN.classList.remove('active');
+    applyLanguage();
+  });
+
+  applyLanguage();
+})();
+</script>
+</body>
+</html>
